@@ -1,0 +1,7 @@
+.idea/
+__pycache__/
+
+results/
+results_onebyone/
+results_ood/
+
