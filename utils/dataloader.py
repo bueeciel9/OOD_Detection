@@ -11,11 +11,11 @@ class CustomData(Dataset):
     def __init__(self, data_path,
                  normalize=True,
                  target_type=False,
-                 augment=True,
+                 augment=False,
                  device=torch.device('cpu')):
-        self.data = torch.from_numpy(np.loadtxt(data_path, delimiter=',', skiprows=1))
-        self.data_x = self.data[:, :-1].to(device=device, dtype=torch.float32)
-        self.data_type = self.data[:, -1].to(device=device, dtype=torch.int32)
+        data = torch.from_numpy(np.loadtxt(data_path, delimiter=',', skiprows=1))
+        self.data_x = data[:, :-1].to(device=device, dtype=torch.float32)
+        self.data_type = data[:, -1].to(device=device, dtype=torch.int32)
 
         if normalize:
             data_norm = torch.from_numpy(np.loadtxt('data/train_data_.csv', delimiter=',', skiprows=1))
@@ -24,16 +24,15 @@ class CustomData(Dataset):
             data_norm_x_max = data_norm_x.max(0).values
             self.data_x = (self.data_x - data_norm_x_min) / (0.0001 + data_norm_x_max - data_norm_x_min)
 
-            # self.data_x = (self.data_x - self.data_x.mean(0)) / (self.data_x.std(0) + 0.01)
-
         if augment:
             hp = torch.tensor([30, 20, 10, 50, 30, 30, 30, 30], dtype=torch.float32)
             if normalize:
                 hp = (hp - hp.mean()) / hp.std()
             data_hp = hp[self.data_type.to(torch.long)]
+            self.data_x = torch.cat([self.data_x, data_hp.reshape(-1, 1)], dim=-1)
 
         if isinstance(target_type, int):
-            self.data = self.data[self.data_type == target_type]
+            self.data_x = self.data_x[self.data_type == target_type]
             self.data_type = self.data_type[self.data_type == target_type]
 
         return
@@ -42,7 +41,7 @@ class CustomData(Dataset):
         return self.data_x[index], self.data_type[index]
 
     def __len__(self):
-        return len(self.data)
+        return len(self.data_x)
 
 
 def collate_custom(batch):
