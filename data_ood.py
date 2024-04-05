@@ -29,10 +29,10 @@ def main():
 
     data_answer = pd.read_csv('data/answer_sample.csv').to_numpy()
     data_answer = data_answer[:, 1]
-    data_answer[:] = 0
+    # data_answer[:] = 0
 
     for i in range(8):
-        if i != 1:
+        if i == 0:
             for x, label in data_generator:
                 with torch.no_grad():
                     z_dist = encoder.encode(x)
